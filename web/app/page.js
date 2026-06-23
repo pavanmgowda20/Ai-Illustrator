@@ -158,7 +158,7 @@ export default function Workspace() {
   // Update browser tab title dynamically
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      document.title = userName ? `${userName} Illustrations` : 'Illustrations';
+      document.title = userName ? `${userName} Illustrations` : 'Personnel Illustrations Generator';
     }
   }, [userName]);
 

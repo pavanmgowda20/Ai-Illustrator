@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Ian Xiaohei Illustrations Generator",
-  description: "Generate minimalist, hand-drawn 'Xiaohei' style visual metaphors for your articles, blogs, and posts.",
+  title: "Personnel Illustrations Generator",
+  description: "Generate minimalist, hand-drawn visual metaphors for your articles, blogs, and posts.",
 };
 
 export default function RootLayout({ children }) {
