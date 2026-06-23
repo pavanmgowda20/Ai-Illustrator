@@ -228,7 +228,8 @@ export default function Workspace() {
         body: JSON.stringify({
           text: inputText,
           mode: mode,
-          count: shotCount
+          count: shotCount,
+          userName: userName
         })
       });
 
@@ -282,7 +283,8 @@ export default function Workspace() {
           'x-image-model': customImageModel
         },
         body: JSON.stringify({
-          shot: shots[shotIndex]
+          shot: shots[shotIndex],
+          userName: userName
         })
       });
 
@@ -344,6 +346,12 @@ export default function Workspace() {
     return 'Configure API Key';
   };
 
+  const replaceXiaohei = (text) => {
+    if (!text) return '';
+    if (!userName) return text;
+    return text.replace(/xiaohei/gi, userName);
+  };
+
   return (
     <div className="app-container">
       {/* Header */}
@@ -394,7 +402,7 @@ export default function Workspace() {
               {mode === 'article' ? (
                 <textarea 
                   className="textarea-input"
-                  placeholder="e.g., How to turn decisions, workflows, states, and metaphors in an article into clean, hand-drawn visual explanations featuring Xiaohei..."
+                  placeholder={`e.g., How to turn decisions, workflows, states, and metaphors in an article into clean, hand-drawn visual explanations featuring ${userName || 'Xiaohei'}...`}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
@@ -450,7 +458,7 @@ export default function Workspace() {
             <ul style={{ fontSize: '0.775rem', paddingLeft: '1rem', lineHeight: '1.5' }}>
               <li><strong>Pure White Background:</strong> Clean look without paper textures.</li>
               <li><strong>Handdrawn Linework:</strong> Thin, slightly wobbly sketch art.</li>
-              <li><strong>Xiaohei character:</strong> Actively participating in the visual metaphors.</li>
+              <li><strong>{userName || 'Xiaohei'} character:</strong> Actively participating in the visual metaphors.</li>
               <li><strong>Color Highlights:</strong> Clean red (warnings), orange (flows), blue (details).</li>
             </ul>
           </div>
@@ -479,7 +487,7 @@ export default function Workspace() {
                 {analyzeStep === 3 && 'Formulating Illustration Strategies...'}
               </h2>
               <p className="empty-desc">
-                Analyzing paragraph flow to anchor high-value cognitive pivots. Designing Xiaohei actions and handwritten annotation labels.
+                Analyzing paragraph flow to anchor high-value cognitive pivots. Designing {userName || 'Xiaohei'} actions and handwritten annotation labels.
               </p>
             </div>
           )}
@@ -514,17 +522,17 @@ export default function Workspace() {
 
                     {/* Metadata information */}
                     <div className="shot-info">
-                      <h3 className="shot-title">{shot.theme}</h3>
-                      <p className="shot-desc">{shot.metaphor}</p>
+                      <h3 className="shot-title">{replaceXiaohei(shot.theme)}</h3>
+                      <p className="shot-desc">{replaceXiaohei(shot.metaphor)}</p>
                       
                       {shot.paragraphAfter && (
                         <div className="shot-meta-item">
-                          <strong>Section Placement:</strong> {shot.paragraphAfter}
+                          <strong>Section Placement:</strong> {replaceXiaohei(shot.paragraphAfter)}
                         </div>
                       )}
                       
                       <div className="shot-meta-item xiaohei">
-                        <strong>Xiaohei Action:</strong> {shot.xiaoheiAction}
+                        <strong>{userName ? `${userName} Action` : 'Xiaohei Action'}:</strong> {replaceXiaohei(shot.xiaoheiAction)}
                       </div>
                     </div>
 
@@ -532,7 +540,7 @@ export default function Workspace() {
                     {shot.labels && shot.labels.length > 0 && (
                       <div className="shot-labels">
                         {shot.labels.map((label, idx) => (
-                          <span className="label-pill" key={idx}>{label}</span>
+                          <span className="label-pill" key={idx}>{replaceXiaohei(label)}</span>
                         ))}
                       </div>
                     )}
@@ -582,7 +590,7 @@ export default function Workspace() {
                             <button 
                               className="btn btn-secondary" 
                               style={{ padding: '0.5rem', borderRadius: '50%', backgroundColor: 'rgba(15,20,32,0.9)' }}
-                              onClick={() => handleDownload(shot.imageUrl, `xiaohei-${shot.id}.png`)}
+                              onClick={() => handleDownload(shot.imageUrl, `${userName ? userName.toLowerCase() : 'xiaohei'}-${shot.id}.png`)}
                               title="Download PNG"
                             >
                               <Icons.Download />

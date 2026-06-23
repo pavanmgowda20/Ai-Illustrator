@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   try {
-    const { text, mode, count } = await req.json();
+    const { text, mode, count, userName } = await req.json();
+    const characterName = userName ? userName.trim() : 'Xiaohei';
     
     // API key resolution: check custom header first, then env variables
     const clientKey = req.headers.get('x-api-key');
@@ -60,7 +61,7 @@ export async function POST(req) {
     }
 
     // Comprehensive Prompt incorporating SKILL.md and references
-    const systemPrompt = `You are the "Ian Xiaohei Illustrations Strategy Planner", a professional visual designer that deconstructs articles and designs hand-drawn visual metaphors featuring the character "Xiaohei".
+    const systemPrompt = `You are the "${characterName} Illustrations Strategy Planner", a professional visual designer that deconstructs articles and designs hand-drawn visual metaphors featuring the character "${characterName}".
 
 Your goal is to parse the user's article text (or concept statement) and generate a planned list of illustration spots (shot list) to be created.
 
@@ -73,15 +74,15 @@ STYLE DNA:
 - NEVER output formal PPT infographics, commercial vector illustrations, cute children posters, or realistic UIs.
 - NO CHINESE CHARACTERS: Absolutely NO Chinese text or Chinese characters. All titles, metaphors, actions, and annotation labels inside the illustration must be in English.
 
-XIAOHEI IP CHARACTER DNA:
+${characterName.toUpperCase()} IP CHARACTER DNA:
 - Shape: Small solid-black creature with white dot eyes, thin legs/arms. Body can be oval, cylindrical, shadow-like, etc.
 - Personality: Serious, deadpan, focused, silent operator. Performs slightly absurd but system-critical operations. NOT cute, NOT a sticker, NOT a mascot just standing in the corner.
-- Xiaohei must participate in the core action of the illustration.
+- ${characterName} must participate in the core action of the illustration.
 
 COMPOSITION & METAPHOR GENERATION:
 1. Turn abstract concept into a PHYSICAL ACTION (e.g. sifting, clogging, weighing, linking, folding, stitching, breaking, leaking).
 2. Represent the system structure with LOW-TECH OBJECTS (e.g. wobbly wooden pipes, cardboard box, pulleys, funnels, scales, drawers, ladders, clotheslines, stamp tools, retro switches).
-3. Put Xiaohei in control of the action (e.g. stuck inside a pipe, pulling a lever, balancing a scale, sewing lines together, stamping labels, carrying a heavy box).
+3. Put ${characterName} in control of the action (e.g. stuck inside a pipe, pulling a lever, balancing a scale, sewing lines together, stamping labels, carrying a heavy box).
 4. Choose ONE structure type for each shot: "Workflow", "System", "Contrast", "State", "Metaphor", "Layers", "Route", or "Comic".
 
 Choose anchors intelligently based on cognitive transitions, warnings, inputs/outputs, or contrasts. Do not over-illustrate. For an article, generate up to ${count} shots. For a single concept, generate exactly 1 shot.
@@ -94,8 +95,8 @@ You MUST respond with a JSON object containing a "shots" array following this ex
       "paragraphAfter": "English description of where this goes, e.g., 'After the paragraph introducing the Solopreneur model'",
       "theme": "English short title of the illustration theme (e.g., 'Information Overload')",
       "structureType": "Workflow / System / Contrast / State / Metaphor / Layers / Route / Comic",
-      "metaphor": "English description of the visual metaphor (e.g., 'Xiaohei trying to force a thick information pipe into a tiny funnel, causing splashes')",
-      "xiaoheiAction": "Detailed English composition prompt explaining Xiaohei's position, what Xiaohei is holding/doing, the wobbly lines, and layout items",
+      "metaphor": "English description of the visual metaphor (e.g., '${characterName} trying to force a thick information pipe into a tiny funnel, causing splashes')",
+      "xiaoheiAction": "Detailed English composition prompt explaining ${characterName}'s position, what ${characterName} is holding/doing, the wobbly lines, and layout items",
       "labels": ["English label 1", "English label 2", "English label 3"]
     }
   ]

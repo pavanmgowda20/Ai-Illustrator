@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   try {
-    const { shot } = await req.json();
+    const { shot, userName } = await req.json();
+    const characterName = userName ? userName.trim() : 'Xiaohei';
 
     // API key resolution: check custom header first, then env variables
     const clientKey = req.headers.get('x-api-key');
@@ -59,6 +60,11 @@ export async function POST(req) {
 
     const { theme, metaphor, structureType, xiaoheiAction, labels } = shot;
 
+    // Safeguard: Replace any residual "Xiaohei" (case-insensitive) in shot details with characterName
+    const safeTheme = theme ? theme.replace(/xiaohei/gi, characterName) : '';
+    const safeMetaphor = metaphor ? metaphor.replace(/xiaohei/gi, characterName) : '';
+    const safeXiaoheiAction = xiaoheiAction ? xiaoheiAction.replace(/xiaohei/gi, characterName) : '';
+
     // Formatting English handwritten labels in prompt
     const formattedLabels = labels && labels.length > 0
       ? labels.map(l => `"${l}"`).join(', ')
@@ -74,14 +80,14 @@ export async function POST(req) {
 Visual Style DNA:
 A pure, flat solid white background. Extreme minimalism. Simple wobbly black ink pen lines. No paper texture, no shadows, no gradients, no borders. High whitespace layout (empty canvas surrounding a central concept that takes up 45% of the frame). Highly restrained color highlights: main sketch lines and characters are black; primary arrows, flows, or paths are thin orange pen lines; critical feedback, warnings, or problem objects are marked with red; secondary annotations or feedback states are blue. No formal chart titles or captions in the corners. Absolutely no Chinese characters, Chinese symbols, or Chinese text on the image. All written text must be strictly in English.
 
-IP Character (Xiaohei):
-A recurring tiny solid-black character named "Xiaohei" or "小黑". He has a wobbly solid-black body shape, two simple white dot eyes, thin stick-like legs, and a completely blank, serious, deadpan expression. Xiaohei must be actively participating in the core action, not just standing there.
+IP Character (${characterName}):
+A recurring tiny solid-black character named "${characterName}" (also known as "Xiaohei" or "小黑"). He has a wobbly solid-black body shape, two simple white dot eyes, thin stick-like legs, and a completely blank, serious, deadpan expression. ${characterName} must be actively participating in the core action, not just standing there.
 
 Core Concept & Theme:
-"${theme}" - expressing the idea: "${metaphor}".
+"${safeTheme}" - expressing the idea: "${safeMetaphor}".
 
 Composition Layout:
-A wobbly sketch showing ${xiaoheiAction}. The layout is simple, raw, and feels like a hand-drawn sketch on a whiteboard.
+A wobbly sketch showing ${safeXiaoheiAction}. The layout is simple, raw, and feels like a hand-drawn sketch on a whiteboard.
 
 Labels:
 ${labelAnnotation}
