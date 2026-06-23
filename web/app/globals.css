@@ -616,3 +616,74 @@ h1, h2, h3, h4, h5, h6 {
 .info-card strong {
   color: #93c5fd;
 }
+
+/* Responsive / Mobile Styles */
+@media (max-width: 968px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+    backdrop-filter: none;
+  }
+  
+  .main-content {
+    padding: 1.5rem;
+  }
+
+  .textarea-input {
+    height: 180px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-header {
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  .app-title {
+    font-size: 1.15rem;
+  }
+
+  .logo-section span {
+    display: none;
+  }
+
+  .btn-text {
+    display: none;
+  }
+
+  .app-header .btn {
+    padding: 0.5rem !important;
+  }
+
+  .modal-content {
+    padding: 1.25rem;
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .shot-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .shot-card {
+    padding: 1rem;
+  }
+}

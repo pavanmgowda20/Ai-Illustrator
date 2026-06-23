@@ -366,7 +366,7 @@ export default function Workspace() {
         <div className="header-actions">
           <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }} onClick={handleOpenSettings}>
             <Icons.Key />
-            {getSettingsButtonLabel()}
+            <span className="btn-text">{getSettingsButtonLabel()}</span>
           </button>
         </div>
       </header>
