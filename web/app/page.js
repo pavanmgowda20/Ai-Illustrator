@@ -85,13 +85,20 @@ export default function Workspace() {
   const [shots, setShots] = useState([]);
   const [lightboxUrl, setLightboxUrl] = useState(null);
 
-  // Load API Key and provider settings from localStorage, and check server API Key configs
+  // User name States
+  const [userName, setUserName] = useState('');
+  const [tempUserName, setTempUserName] = useState('');
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [hasLoadedName, setHasLoadedName] = useState(false);
+
+  // Load API Key, provider settings, and user name from localStorage, and check server API Key configs
   useEffect(() => {
     const savedProvider = localStorage.getItem('api_provider') || 'openai';
     const savedKey = localStorage.getItem('api_key') || localStorage.getItem('openai_api_key') || '';
     const savedBaseUrl = localStorage.getItem('api_base_url') || '';
     const savedTextModel = localStorage.getItem('api_text_model') || '';
     const savedImageModel = localStorage.getItem('api_image_model') || '';
+    const savedName = localStorage.getItem('user_name') || '';
     
     setProvider(savedProvider);
     setTempProvider(savedProvider);
@@ -103,6 +110,12 @@ export default function Workspace() {
     setTempTextModel(savedTextModel);
     setCustomImageModel(savedImageModel);
     setTempImageModel(savedImageModel);
+    setUserName(savedName);
+    setTempUserName(savedName);
+    setHasLoadedName(true);
+    if (!savedName) {
+      setShowNameModal(true);
+    }
 
     // Fetch server side default config status
     const fetchConfig = async () => {
@@ -142,18 +155,27 @@ export default function Workspace() {
     fetchConfig();
   }, []);
 
+  // Update browser tab title dynamically
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.title = userName ? `${userName} Illustrations` : 'Illustrations';
+    }
+  }, [userName]);
+
   const handleSaveSettings = () => {
     localStorage.setItem('api_provider', tempProvider);
     localStorage.setItem('api_key', tempApiKey);
     localStorage.setItem('api_base_url', tempBaseUrl);
     localStorage.setItem('api_text_model', tempTextModel);
     localStorage.setItem('api_image_model', tempImageModel);
+    localStorage.setItem('user_name', tempUserName);
     
     setProvider(tempProvider);
     setApiKey(tempApiKey);
     setCustomBaseUrl(tempBaseUrl);
     setCustomTextModel(tempTextModel);
     setCustomImageModel(tempImageModel);
+    setUserName(tempUserName);
     setShowSettings(false);
   };
 
@@ -164,6 +186,7 @@ export default function Workspace() {
     localStorage.removeItem('api_base_url');
     localStorage.removeItem('api_text_model');
     localStorage.removeItem('api_image_model');
+    localStorage.removeItem('user_name');
     
     setProvider('openai');
     setTempProvider('openai');
@@ -175,7 +198,10 @@ export default function Workspace() {
     setTempTextModel('');
     setCustomImageModel('');
     setTempImageModel('');
+    setUserName('');
+    setTempUserName('');
     setShowSettings(false);
+    setShowNameModal(true);
   };
 
   // Run the analysis prompt to design a shot list
@@ -307,6 +333,7 @@ export default function Workspace() {
       );
       if (!continueOverride) return;
     }
+    setTempUserName(userName);
     setShowSettings(true);
   };
 
@@ -323,7 +350,9 @@ export default function Workspace() {
       <header className="app-header">
         <div className="logo-section">
           <div className="logo-dot"></div>
-          <h1 className="app-title">Xiaohei Illustrations</h1>
+          <h1 className="app-title">
+            {userName ? `${userName} Illustrations` : 'Illustrations'}
+          </h1>
           <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', padding: '0.2rem 0.4rem', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '4px', color: 'var(--text-muted)' }}>Workspace</span>
         </div>
         <div className="header-actions">
@@ -586,6 +615,23 @@ export default function Workspace() {
             <p className="modal-desc text-dark" style={{ marginBottom: '1rem', fontSize: '0.825rem' }}>
               Your API settings are stored locally in your browser cache and only sent when requesting illustrations.
             </p>
+
+            {/* Display Name Input */}
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1rem' }}>
+              <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Workspace Settings</h4>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Display Name / Brand Name</label>
+                <input 
+                  type="text"
+                  className="text-input"
+                  placeholder="Enter your name... (e.g., Ian)"
+                  value={tempUserName}
+                  onChange={(e) => setTempUserName(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>API Configuration</h4>
             
             {/* Provider selection */}
             <div className="form-group">
@@ -693,6 +739,7 @@ export default function Workspace() {
                   setTempBaseUrl(customBaseUrl);
                   setTempTextModel(customTextModel);
                   setTempImageModel(customImageModel);
+                  setTempUserName(userName);
                   setShowSettings(false);
                 }}
               >
@@ -715,6 +762,54 @@ export default function Workspace() {
             >
               <Icons.Close />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* First-time Name Prompt Modal */}
+      {showNameModal && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
+          <div className="modal-content" style={{ maxWidth: '450px' }}>
+            <h3 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Icons.Sparkles /> Welcome to Illustrations
+            </h3>
+            <p className="modal-desc text-dark" style={{ marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+              Please enter your name to customize your illustration workspace.
+            </p>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (tempUserName.trim()) {
+                const name = tempUserName.trim();
+                localStorage.setItem('user_name', name);
+                setUserName(name);
+                setShowNameModal(false);
+              }
+            }}>
+              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                <label className="form-label">Your Name</label>
+                <input 
+                  type="text"
+                  className="text-input"
+                  placeholder="e.g., Ian, Alex, Sarah"
+                  value={tempUserName}
+                  onChange={(e) => setTempUserName(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  style={{ width: '100%' }}
+                  disabled={!tempUserName.trim()}
+                >
+                  Enter Workspace
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
