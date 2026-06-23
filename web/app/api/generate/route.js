@@ -59,23 +59,23 @@ export async function POST(req) {
 
     const { theme, metaphor, structureType, xiaoheiAction, labels } = shot;
 
-    // Formatting Chinese handwritten labels in prompt
+    // Formatting English handwritten labels in prompt
     const formattedLabels = labels && labels.length > 0
       ? labels.map(l => `"${l}"`).join(', ')
       : '';
 
     const labelAnnotation = formattedLabels
-      ? `Include sparse, clean, small handwritten Chinese annotations in red, orange, or blue ink placed next to the relevant parts, strictly using these texts: ${formattedLabels}. The handwriting is informal and sketch-like.`
+      ? `Include sparse, clean, small handwritten English annotations in red, orange, or blue ink placed next to the relevant parts, strictly using these exact English texts: ${formattedLabels}. Do not write any Chinese characters. The handwriting is informal and sketch-like.`
       : '';
 
-    // Constructing the DALL-E 3 prompt based on prompt-template.md
+    // Constructing the visual prompt based on prompt-template.md
     const dallePrompt = `Generate a minimalist 16:9 landscape line art illustration.
 
 Visual Style DNA:
-A pure, flat solid white background. Extreme minimalism. Simple wobbly black ink pen lines. No paper texture, no shadows, no gradients, no borders. High whitespace layout (empty canvas surrounding a central concept that takes up 45% of the frame). Highly restrained color highlights: main sketch lines and characters are black; primary arrows, flows, or paths are thin orange pen lines; critical feedback, warnings, or problem objects are marked with red; secondary annotations or feedback states are blue. No formal chart titles or captions in the corners.
+A pure, flat solid white background. Extreme minimalism. Simple wobbly black ink pen lines. No paper texture, no shadows, no gradients, no borders. High whitespace layout (empty canvas surrounding a central concept that takes up 45% of the frame). Highly restrained color highlights: main sketch lines and characters are black; primary arrows, flows, or paths are thin orange pen lines; critical feedback, warnings, or problem objects are marked with red; secondary annotations or feedback states are blue. No formal chart titles or captions in the corners. Absolutely no Chinese characters, Chinese symbols, or Chinese text on the image. All written text must be strictly in English.
 
 IP Character (Xiaohei):
-A recurring tiny solid-black character named "小黑". He has a wobbly solid-black body shape, two simple white dot eyes, thin stick-like legs, and a completely blank, serious, deadpan expression. Xiaohei must be actively participating in the core action, not just standing there.
+A recurring tiny solid-black character named "Xiaohei" or "小黑". He has a wobbly solid-black body shape, two simple white dot eyes, thin stick-like legs, and a completely blank, serious, deadpan expression. Xiaohei must be actively participating in the core action, not just standing there.
 
 Core Concept & Theme:
 "${theme}" - expressing the idea: "${metaphor}".
@@ -87,7 +87,7 @@ Labels:
 ${labelAnnotation}
 
 Final Constraints:
-Only output the sketch. Do not add frames, borders, realistic UI elements, digital gradients, or 3D renderings. Make it look like an conceptual whiteboard sketch created by a product designer.`;
+Only output the sketch. Do not add frames, borders, realistic UI elements, digital gradients, or 3D renderings. All text must be in English. No Chinese characters. Make it look like an conceptual whiteboard sketch created by a product designer.`;
 
     // Call Pollinations API directly if selected (free & keyless)
     if (modelName === 'pollinations-flux') {

@@ -75,13 +75,17 @@ export default function Workspace() {
   const [customImageModel, setCustomImageModel] = useState('');
   const [tempImageModel, setTempImageModel] = useState('');
   
+  // Developer configuration status (from server side check)
+  const [hasDefaultKey, setHasDefaultKey] = useState(false);
+  const [defaultProvider, setDefaultProvider] = useState('openai');
+  
   // App States
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeStep, setAnalyzeStep] = useState(0); // 0: Idle, 1: Reading, 2: Metaphors, 3: Formatting
   const [shots, setShots] = useState([]);
   const [lightboxUrl, setLightboxUrl] = useState(null);
 
-  // Load API Key and provider settings from localStorage
+  // Load API Key and provider settings from localStorage, and check server API Key configs
   useEffect(() => {
     const savedProvider = localStorage.getItem('api_provider') || 'openai';
     const savedKey = localStorage.getItem('api_key') || localStorage.getItem('openai_api_key') || '';
@@ -99,6 +103,43 @@ export default function Workspace() {
     setTempTextModel(savedTextModel);
     setCustomImageModel(savedImageModel);
     setTempImageModel(savedImageModel);
+
+    // Fetch server side default config status
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          setHasDefaultKey(data.hasDefaultKey || false);
+          setDefaultProvider(data.defaultProvider || 'openai');
+          
+          // If the server has a default key and the user hasn't configured a personal key yet,
+          // automatically default the client provider state to match the server default provider
+          if (data.hasDefaultKey && !savedKey && !localStorage.getItem('api_provider')) {
+            setProvider(data.defaultProvider);
+            setTempProvider(data.defaultProvider);
+            if (data.defaultProvider === 'grok') {
+              setCustomBaseUrl('https://api.x.ai/v1');
+              setTempBaseUrl('https://api.x.ai/v1');
+              setCustomTextModel('grok-2');
+              setTempTextModel('grok-2');
+              setCustomImageModel('grok-2');
+              setTempImageModel('grok-2');
+            } else if (data.defaultProvider === 'groq') {
+              setCustomBaseUrl('https://api.groq.com/openai/v1');
+              setTempBaseUrl('https://api.groq.com/openai/v1');
+              setCustomTextModel('llama-3.3-70b-versatile');
+              setTempTextModel('llama-3.3-70b-versatile');
+              setCustomImageModel('pollinations-flux');
+              setTempImageModel('pollinations-flux');
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load server config", e);
+      }
+    };
+    fetchConfig();
   }, []);
 
   const handleSaveSettings = () => {
@@ -258,6 +299,24 @@ export default function Workspace() {
     }
   };
 
+  // Open settings with override confirmation alert if server has a default key configured
+  const handleOpenSettings = () => {
+    if (!apiKey && hasDefaultKey) {
+      const continueOverride = window.confirm(
+        "The developer has already configured a default API key for this workspace. You do not need to configure one.\n\nWould you like to continue and set up your own personal API key instead?"
+      );
+      if (!continueOverride) return;
+    }
+    setShowSettings(true);
+  };
+
+  // Compute key setup button label dynamically
+  const getSettingsButtonLabel = () => {
+    if (apiKey) return 'Personal Key Active';
+    if (hasDefaultKey) return 'Default API Key Active';
+    return 'Configure API Key';
+  };
+
   return (
     <div className="app-container">
       {/* Header */}
@@ -268,9 +327,9 @@ export default function Workspace() {
           <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', padding: '0.2rem 0.4rem', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '4px', color: 'var(--text-muted)' }}>Workspace</span>
         </div>
         <div className="header-actions">
-          <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }} onClick={() => setShowSettings(true)}>
+          <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }} onClick={handleOpenSettings}>
             <Icons.Key />
-            {apiKey ? 'API Key Set' : 'Configure API Key'}
+            {getSettingsButtonLabel()}
           </button>
         </div>
       </header>
@@ -301,12 +360,12 @@ export default function Workspace() {
             {/* Main Input field */}
             <div className="form-group">
               <label className="form-label">
-                {mode === 'article' ? 'Paste your Chinese article/post content:' : 'Enter the visual concept or metaphor statement:'}
+                {mode === 'article' ? 'Paste your article/post content:' : 'Enter the visual concept or metaphor statement:'}
               </label>
               {mode === 'article' ? (
                 <textarea 
                   className="textarea-input"
-                  placeholder="例如：把中文文章里的判断、流程、状态和隐喻，变成一张张白底、手绘、怪诞但清爽的正文配图..."
+                  placeholder="e.g., How to turn decisions, workflows, states, and metaphors in an article into clean, hand-drawn visual explanations featuring Xiaohei..."
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
@@ -314,7 +373,7 @@ export default function Workspace() {
                 <input 
                   type="text"
                   className="text-input"
-                  placeholder="例如：信任不是喊出来的，而是一块证据一块证据铺过去。"
+                  placeholder="e.g., Trust is built piece by piece, not shouted out."
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
